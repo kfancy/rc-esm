@@ -1,13 +1,41 @@
 # rc
 
-The non-configurable configuration loader for lazy people.
+The non-configurable configuration loader for lazy people. Now with TypeScript support!
 
 ## Usage
 
 The only option is to pass rc the name of your app, and your default configuration.
 
+### JavaScript/ESM Usage
+
 ```javascript
-var conf = require('rc')(appname, {
+import rc from 'rc';
+
+const conf = rc(appname, {
+  //defaults go here.
+  port: 2468,
+
+  //defaults which are objects will be merged, not replaced
+  views: {
+    engine: 'jade'
+  }
+});
+```
+
+### TypeScript Usage
+
+```typescript
+import rc, { RcOptions } from 'rc';
+
+interface AppConfig {
+  port: number;
+  mode?: string;
+  views?: {
+    engine: string;
+  };
+}
+
+const conf: AppConfig = rc<AppConfig>('myapp', {
   //defaults go here.
   port: 2468,
 
@@ -22,8 +50,10 @@ var conf = require('rc')(appname, {
 If you pass in a predefined defaults object, it will be mutated:
 
 ```javascript
-var conf = {};
-require('rc')(appname, conf);
+import rc from 'rc';
+
+const conf = {};
+rc(appname, conf);
 ```
 
 If `rc` finds any config files for your app, the returned config object will have
@@ -198,29 +228,140 @@ Here is the expected output from various commands:
 
 #### Pass in your own `argv`
 
-You may pass in your own `argv` as the third argument to `rc`.  This is in case you want to [use your own command-line opts parser](https://github.com/dominictarr/rc/pull/12).
+You may pass in your own `argv` as third argument to `rc`.  This is in case you want to [use your own command-line opts parser](https://github.com/dominictarr/rc/pull/12).
 
 ```javascript
-require('rc')(appname, defaults, customArgvParser);
+import rc from 'rc';
+
+rc(appname, defaults, customArgvParser);
 ```
 
-## Pass in your own parser
+#### Pass in your own parser
 
 If you have a special need to use a non-standard parser,
 you can do so by passing in the parser as the 4th argument.
 (leave the 3rd as null to get the default args parser)
 
 ```javascript
-require('rc')(appname, defaults, null, parser);
+import rc from 'rc';
+
+rc(appname, defaults, null, parser);
 ```
 
 This may also be used to force a more strict format,
 such as strict, valid JSON only.
 
+#### TypeScript Parser Example
+
+```typescript
+import rc from 'rc';
+import type { ParseFunction } from 'rc';
+
+const strictParser: ParseFunction = (content: string) => {
+  return JSON.parse(content); // Only valid JSON
+};
+
+const config = rc('myapp', defaults, null, strictParser);
+```
+
+## TypeScript Support
+
+This package now includes full TypeScript support with built-in type definitions:
+
+```typescript
+import rc, { RcOptions, RcFunction } from 'rc';
+
+// Use with type safety
+interface MyConfig {
+  port: number;
+  database: {
+    host: string;
+    port: number;
+  };
+}
+
+const config: MyConfig = rc<MyConfig>('myapp', {
+  port: 3000,
+  database: {
+    host: 'localhost',
+    port: 5432
+  }
+});
+
+// Access with full type safety
+const dbHost = config.database.host; // string
+const port = config.port; // number
+```
+
+## Development
+
+### Building
+
+```bash
+# Build the TypeScript source
+npm run build
+
+# Build in watch mode for development
+npm run build:watch
+```
+
+### Code Quality
+
+```bash
+# Run TypeScript type checking
+npm run typecheck
+
+# Lint the code
+npm run lint
+
+# Auto-fix linting issues
+npm run lint:fix
+
+# Format code with Prettier
+npm run format
+
+# Check formatting
+npm run format:check
+```
+
+### Testing
+
+```bash
+# Run tests against built output
+npm run test
+
+# Run tests in development mode
+npm run test:dev
+
+# Test with coverage (Node.js 18+)
+npm run test:coverage
+```
+
+## Breaking Changes (v2.0.0)
+
+This version includes several breaking changes:
+
+- **TypeScript Migration**: Package is now written in TypeScript
+- **ESM Only**: No longer supports CommonJS `require()`, use `import` instead
+- **Node.js 18+**: Minimum Node.js version increased to v18
+- **Build Output**: Package now includes built JavaScript files in `dist/` directory
+- **Type Definitions**: TypeScript definitions are included automatically
+
+Migration from v1.x:
+
+```typescript
+// Before (v1.x - CommonJS)
+var rc = require('rc');
+var config = rc('myapp', defaults);
+
+// After (v2.x - ESM + TypeScript)
+import rc from 'rc';
+const config = rc('myapp', defaults);
+```
+
 ## Note on Performance
 
 `rc` is running `fs.statSync`-- so make sure you don't use it in a hot code path (e.g. a request handler) 
-
 
 ## License
 

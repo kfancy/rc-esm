@@ -1,11 +1,40 @@
 {
   "name": "rc",
-  "version": "1.2.8",
-  "description": "hardwired configuration loader",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "hardwired configuration loader with TypeScript support",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": "browser.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts",
+      "browser": "./browser.js"
+    },
+    "./cli": {
+      "import": "./dist/cli.js",
+      "types": "./dist/cli.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils.js",
+      "types": "./dist/utils.d.ts"
+    }
+  },
   "scripts": {
-    "test": "set -e; node test/test.js; node test/ini.js; node test/nested-env-vars.js"
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "dev": "tsx src/index.ts",
+    "test": "npm run build && tsx test/test.test.ts && tsx test/nested-env-vars.test.ts && tsx test/ini.test.ts",
+    "test:watch": "tsx --watch test/test.test.ts && tsx --watch test/nested-env-vars.test.ts && tsx --watch test/ini.test.ts",
+    "test:dev": "tsx test/test.test.ts && tsx test/nested-env-vars.test.ts && tsx test/ini.test.ts",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts test/**/*.ts",
+    "format:check": "prettier --check src/**/*.ts test/**/*.ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm run test && npm run lint && npm run format:check",
+    "clean": "rm -rf dist/ node/ coverage/"
   },
   "repository": {
     "type": "git",
@@ -16,14 +45,45 @@
     "config",
     "rc",
     "unix",
-    "defaults"
+    "defaults",
+    "typescript",
+    "esm",
+    "configuration",
+    "cli"
   ],
-  "bin": "./cli.js",
+  "bin": "./dist/cli.js",
   "author": "Dominic Tarr <dominic.tarr@gmail.com> (dominictarr.com)",
+    "engines": {
+    "node": ">=18",
+    "npm": ">=8"
+  },
   "dependencies": {
     "deep-extend": "^0.6.0",
     "ini": "~1.3.0",
     "minimist": "^1.2.0",
     "strip-json-comments": "~2.0.1"
-  }
+  },
+  "devDependencies": {
+    "@types/ini": "^1.3.34",
+    "@types/minimist": "^1.2.5",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "eslint": "^8.57.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-n": "^17.23.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^7.2.1",
+    "prettier": "^3.2.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.6.0",
+    "typescript": "^5.3.0"
+  },
+  "files": [
+    "dist/",
+    "browser.js",
+    "README.md",
+    "LICENSE*"
+  ]
 }
