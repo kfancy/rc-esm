@@ -1,11 +1,11 @@
 export interface RcOptions {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface RcConfig {
   configs?: string[];
   config?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ParseFunction {
@@ -13,7 +13,7 @@ export interface ParseFunction {
 }
 
 export interface RcFunction {
-  <T = RcOptions>(
+  <T extends Record<string, unknown> = RcOptions>(
     name: string,
     defaults?: T | string,
     argv?: RcOptions,

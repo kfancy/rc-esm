@@ -1,5 +1,23 @@
-import { test, describe, assert } from './test-runner.mjs';
-import rc from '../dist/index.js';
+import assert from 'node:assert';
+import { test, describe } from 'node:test';
+import rc from '../index.ts';
+
+interface TestConfig {
+  option: boolean;
+  someOpt?: {
+    a?: string;
+    x?: string;
+    z?: string;
+    w?: {
+      w?: string;
+    };
+  };
+  z?: {
+    i?: string;
+  };
+  test_upperCase?: string;
+  [key: string]: unknown;
+}
 
 describe('nested environment variables', () => {
   const seed = Math.random();
@@ -25,11 +43,9 @@ describe('nested environment variables', () => {
   process.env[N + '_test_upperCase'] = '187';
 
   function testPrefix(prefix: string) {
-    const config = rc(prefix, {
+    const config: TestConfig = rc(prefix, {
       option: true,
     });
-
-    console.log('\n\n------ nested-env-vars ------\n', { prefix: prefix }, '\n', config);
 
     assert.strictEqual(config.option, true);
     assert.strictEqual(config.someOpt?.a, '42');

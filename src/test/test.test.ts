@@ -1,7 +1,8 @@
-import { test, describe, assert } from './test-runner.mjs';
+import assert from 'node:assert';
+import { test, describe } from 'node:test';
 import { writeFileSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
-import rc from '../dist/index.js';
+import rc from '../index.ts';
 
 describe('rc basic functionality', () => {
   const n = 'rc' + Math.random();
@@ -12,8 +13,6 @@ describe('rc basic functionality', () => {
     const config = rc(n, {
       option: true,
     });
-
-    console.log(config);
 
     assert.strictEqual(config.option, true);
     assert.strictEqual(config.envOption, '42');
@@ -36,8 +35,6 @@ describe('rc basic functionality', () => {
         },
       }
     );
-
-    console.log(customArgv);
 
     assert.strictEqual(customArgv.option, false);
     assert.strictEqual(customArgv.envOption, 24);
@@ -63,8 +60,6 @@ describe('rc basic functionality', () => {
     });
 
     unlinkSync(jsonrc);
-
-    console.log(commentedJSON);
 
     assert.strictEqual(commentedJSON.option, false);
     assert.strictEqual(commentedJSON.envOption, '42');

@@ -1,16 +1,16 @@
-import { test, describe, assert } from './test-runner.mjs';
-import * as utils from '../dist/utils.js';
+import assert from 'node:assert';
+import { test, describe } from 'node:test';
+import * as utils from '../utils.ts';
 import * as INI from 'ini';
 
 describe('INI parsing utilities', () => {
-  function testObj(obj: Record<string, any>): void {
+  function testObj(obj: Record<string, unknown>): void {
     const _json = JSON.stringify(obj);
     const _ini = INI.stringify(obj);
 
     const json = utils.parse(_json);
     const ini = utils.parse(_ini);
 
-    console.log(_ini, _json);
     assert.deepStrictEqual(json, ini);
   }
 

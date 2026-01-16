@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import rc from './index.js';
+import rc from './index.ts';
 
 const appName = process.argv[2];
 if (!appName) {

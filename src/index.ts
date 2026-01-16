@@ -1,22 +1,25 @@
 import { join } from 'node:path';
 import minimist from 'minimist';
-import * as utils from './utils.js';
-import type { RcFunction, RcOptions, ParseFunction, RcConfig } from './types.js';
+import * as utils from './utils.ts';
+import type { RcFunction, RcOptions, ParseFunction, RcConfig } from './types.ts';
 
 const etc = '/etc';
 const win = process.platform === 'win32';
 const home = win ? process.env.USERPROFILE : process.env.HOME;
 
 // Native deepExtend implementation to replace deep-extend
-function deepExtend(target: any, ...sources: any[]): any {
+function deepExtend(
+  target: Record<string, unknown>,
+  ...sources: Record<string, unknown>[]
+): Record<string, unknown> {
   if (!sources.length) return target;
-  const source = sources.shift();
+  const source = sources.shift()!;
 
   if (isObject(target) && isObject(source)) {
     for (const key in source) {
       if (isObject(source[key])) {
         if (!target[key]) Object.assign(target, { [key]: {} });
-        deepExtend(target[key], source[key]);
+        deepExtend(target[key] as Record<string, unknown>, source[key] as Record<string, unknown>);
       } else {
         Object.assign(target, { [key]: source[key] });
       }
@@ -26,17 +29,16 @@ function deepExtend(target: any, ...sources: any[]): any {
   return deepExtend(target, ...sources);
 }
 
-function isObject(item: any): item is Record<string, any> {
-  return item && typeof item === 'object' && !Array.isArray(item);
+function isObject(item: unknown): item is Record<string, unknown> {
+  return item !== null && typeof item === 'object' && !Array.isArray(item);
 }
 
-const rc: RcFunction = function <T = RcOptions>(
+const rc: RcFunction = function <T extends Record<string, unknown> = RcOptions>(
   name: string,
   defaults?: T | string,
   argv?: RcOptions,
   parse?: ParseFunction
 ): T & RcConfig {
-  console.log('DEBUG: rc called with name:', name);
   if (typeof name !== 'string') {
     throw new Error('rc(name): name *must* be string');
   }
@@ -59,7 +61,7 @@ const rc: RcFunction = function <T = RcOptions>(
   const parser = parse || utils.parse;
   const env = utils.env(name + '_');
 
-  const configs: any[] = [processedDefaults];
+  const configs: Record<string, unknown>[] = [processedDefaults];
   const configFiles: string[] = [];
 
   function addConfigFile(file: string | undefined): void {
@@ -84,22 +86,18 @@ const rc: RcFunction = function <T = RcOptions>(
     ].forEach(addConfigFile);
   }
   const localRcPath = '.' + name + 'rc';
-  console.log('DEBUG: Looking for local rc file:', localRcPath);
   const foundPath = utils.find(localRcPath);
-  console.log('DEBUG: Found at:', foundPath);
   addConfigFile(foundPath);
   if (env.config) addConfigFile(env.config as string);
   if (argv.config) addConfigFile(argv.config as string);
 
-  return deepExtend(
-    {},
-    ...configs,
-    env,
-    argv,
-    configFiles.length
-      ? { configs: configFiles, config: configFiles[configFiles.length - 1] }
-      : undefined
-  ) as T & RcOptions;
+  const result = deepExtend({}, ...configs, env, argv) as T & RcOptions;
+
+  if (configFiles.length) {
+    Object.assign(result, { configs: configFiles, config: configFiles[configFiles.length - 1] });
+  }
+
+  return result;
 };
 
 export default rc;

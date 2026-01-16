@@ -3,7 +3,7 @@ import ini from 'ini';
 import path from 'node:path';
 // @ts-ignore - strip-json-comments doesn't provide types
 import stripJsonComments from 'strip-json-comments';
-import type { ParseFunction, RcOptions } from './types.js';
+import type { ParseFunction, RcOptions } from './types.ts';
 
 export const parse: ParseFunction = function (content: string): RcOptions {
   //if it ends in .json or starts with { then it must be json.
@@ -42,7 +42,7 @@ export const json = function (...args: (string | undefined)[]): RcOptions | null
 
 export const env = function (prefix: string, env?: Record<string, string | undefined>) {
   const processEnv = env || process.env;
-  const obj = {};
+  const obj: Record<string, unknown> = {};
   const l = prefix.length;
   for (const k in processEnv) {
     if (k.toLowerCase().indexOf(prefix.toLowerCase()) === 0) {
@@ -57,11 +57,11 @@ export const env = function (prefix: string, env?: Record<string, string | undef
         keypath.splice(emptyStringIndex, 1);
       }
 
-      let cursor: any = obj;
+      let cursor: Record<string, unknown> = obj;
       keypath.forEach(function _buildSubObj(subkey, i) {
         // (check for _subkey first so we ignore empty strings)
         // (check for cursor to avoid assignment to primitive objects)
-        if (!subkey || typeof cursor !== 'object') {
+        if (!subkey || typeof cursor !== 'object' || cursor === null) {
           return;
         }
 
@@ -78,7 +78,7 @@ export const env = function (prefix: string, env?: Record<string, string | undef
         }
 
         // Increment cursor used to track the object at the current depth
-        cursor = cursor[subkey];
+        cursor = cursor[subkey] as Record<string, unknown>;
       });
     }
   }
